@@ -1,0 +1,7 @@
+name: service-xmldsig
+
+services:
+  server:
+    image: ghcr.io/k15g/service-xmldsig:latest
+    ports:
+      - "8080:8080"

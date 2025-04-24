@@ -53,31 +53,37 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Build and push [dev]
+      - name: Lowercase github.repository
+        run: echo "IMAGE_NAME=`echo ${{github.repository}} | tr '[:upper:]' '[:lower:]'`" >>${GITHUB_ENV}
+
+      - name: Build and push Docker image [edge]
+        if: !startsWith(github.ref, 'refs/tags/v'
         run: |
           docker buildx build \
-            --push \
             --platform linux/amd64,linux/arm64 \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --tag ghcr.io/${{ github.repository }}:dev \
-            .
+            --label "org.opencontainers.image.vendor=Klakegg Consulting AS" \
+            --tag ghcr.io/${{ env.IMAGE_NAME }}:edge \
+            --push .
 
-      - name: Build and push [version]
+      - name: Build and push Docker image [version]
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           docker buildx build \
-            --push \
             --platform linux/amd64,linux/arm64 \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --tag ghcr.io/${{ github.repository }}:${{ env.PROJECT_VERSION }} \
-            .
+            --label "org.opencontainers.image.vendor=Klakegg Consulting AS" \
+            --label "org.opencontainers.image.version=${{ env.PROJECT_VERSION }}" \
+            --tag ghcr.io/${{ env.IMAGE_NAME }}:${{ env.PROJECT_VERSION }} \
+            --push .
 
-      - name: Build and push [latest]
+      - name: Build and push Docker image [latest]
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           docker buildx build \
-            --push \
             --platform linux/amd64,linux/arm64 \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --tag ghcr.io/${{ github.repository }}:latest \
-            .
+            --label "org.opencontainers.image.vendor=Klakegg Consulting AS" \
+            --label "org.opencontainers.image.version=${{ env.PROJECT_VERSION }}" \
+            --tag ghcr.io/${{ env.IMAGE_NAME }}:latest \
+            --push .
